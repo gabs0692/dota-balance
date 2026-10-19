@@ -539,6 +539,7 @@ function generateBalancedTeams(list) {
 }
 
 
+
 function renderTeams() {
   teamsContainer.replaceChildren();
 
@@ -552,112 +553,266 @@ function renderTeams() {
     5: "Hard Support"
   };
 
-  [
-    { key: "teamA", label: "Equipo A" },
-    { key: "teamB", label: "Equipo B" }
-  ].forEach(({ key, label }) => {
-    const card = document.createElement("div");
-    card.className = "team-card";
+  const roleIcons = {
+    1: "⚔️",
+    2: "🎯",
+    3: "🛡️",
+    4: "💚",
+    5: "✨"
+  };
 
-    const title = document.createElement("h3");
-    title.textContent =
-      `${label} · ${teamScore(currentTeams[key])} puntos`;
+  const iconButton = (label, icon, className) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `team-action ${className}`;
+    button.setAttribute("aria-label", label);
+    button.title = label;
+    button.innerHTML = icon;
+    return button;
+  };
 
-    card.appendChild(title);
+  const swapIcon = `
+    <svg viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" stroke-width="1.8"
+      stroke-linecap="round" stroke-linejoin="round"
+      aria-hidden="true">
+      <path d="M16 3l4 4-4 4"/>
+      <path d="M4 7h16"/>
+      <path d="M8 21l-4-4 4-4"/>
+      <path d="M20 17H4"/>
+    </svg>`;
 
-    [...currentTeams[key]]
-  .sort((a, b) => (a.suggestedRole || 99) - (b.suggestedRole || 99))
-  .forEach((player) => {
-      const row = document.createElement("p");
+  const removeIcon = `
+    <svg viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" stroke-width="1.8"
+      stroke-linecap="round" stroke-linejoin="round"
+      aria-hidden="true">
+      <path d="M4 7h16"/>
+      <path d="M10 11v6M14 11v6"/>
+      <path d="M5 7l1 14h12l1-14"/>
+      <path d="M9 7V4h6v3"/>
+    </svg>`;
 
-      const role = player.suggestedRole;
-      const roleText = role
-        ? `${role} · ${roleNames[role]}`
-        : "Rol por asignar";
+  const roleIcon = `
+    <svg viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" stroke-width="1.8"
+      stroke-linecap="round" stroke-linejoin="round"
+      aria-hidden="true">
+      <path d="M12 5v14M5 12h14"/>
+      <circle cx="12" cy="12" r="9"/>
+    </svg>`;
 
-      const playerText = document.createElement("span");
-      playerText.textContent =
-        `${player.name} (${player.medal}) — ${roleText} `;
+  function showSwapDialog(teamKey, player) {
+    const otherKey = teamKey === "teamA" ? "teamB" : "teamA";
+    const otherTeam = currentTeams[otherKey];
 
-      row.appendChild(playerText);
+    const overlay = document.createElement("div");
+    overlay.className = "lobby-modal-overlay";
 
-      const swapButton = document.createElement("button");
-      swapButton.type = "button";
-      swapButton.className = "remove-button";
-      swapButton.textContent = "Intercambiar";
+    const dialog = document.createElement("section");
+    dialog.className = "lobby-modal";
+    dialog.setAttribute("role", "dialog");
+    dialog.setAttribute("aria-modal", "true");
+    dialog.setAttribute("aria-label", "Intercambiar jugadores");
 
-      swapButton.onclick = async () => {
-        const otherKey =
-          key === "teamA" ? "teamB" : "teamA";
+    const heading = document.createElement("h3");
+    heading.textContent = "Intercambiar jugador";
 
-        const otherTeam = currentTeams[otherKey];
+    const description = document.createElement("p");
+    description.className = "modal-description";
+    description.textContent =
+      `Elige quién ocupará el lugar de ${player.name}.`;
 
-        const options = otherTeam
-          .map((p, i) => `${i + 1}. ${p.name}`)
-          .join("\n");
+    const options = document.createElement("div");
+    options.className = "swap-options";
 
-        const answer = prompt(
-          `Intercambiar a ${player.name} con:\n${options}\n\nEscribe un número del 1 al 5:`
-        );
+    const close = () => overlay.remove();
 
-        if (answer === null) return;
+    otherTeam.forEach((opponent) => {
+      const option = document.createElement("button");
+      option.type = "button";
+      option.className = "swap-option";
 
-        const chosen = Number(answer);
+      const info = document.createElement("span");
+      info.className = "swap-option-info";
 
-        if (
-          !Number.isInteger(chosen) ||
-          chosen < 1 ||
-          chosen > 5
-        ) {
-          alert("Elige un número entre 1 y 5.");
+      const name = document.createElement("strong");
+      name.textContent = opponent.name;
+
+      const medal = document.createElement("small");
+      medal.textContent = opponent.medal;
+
+      info.append(name, medal);
+
+      const arrow = document.createElement("span");
+      arrow.className = "swap-option-arrow";
+      arrow.textContent = "↔";
+
+      option.append(info, arrow);
+
+      option.onclick = async () => {
+        const ownIndex = currentTeams[teamKey]
+          .findIndex((p) => p.id === player.id);
+
+        const opponentIndex = currentTeams[otherKey]
+          .findIndex((p) => p.id === opponent.id);
+
+        if (ownIndex < 0 || opponentIndex < 0) {
+          close();
           return;
         }
 
-        const otherIndex = chosen - 1;
-        const replacement = otherTeam[otherIndex];
-     
-currentTeams[key][index] = replacement;
-otherTeam[otherIndex] = player;
+        [
+          currentTeams[teamKey][ownIndex],
+          currentTeams[otherKey][opponentIndex]
+        ] = [
+          currentTeams[otherKey][opponentIndex],
+          currentTeams[teamKey][ownIndex]
+        ];
 
-renderTeams();
-await saveSharedLobby();
-
+        close();
+        renderTeams();
+        await saveSharedLobby();
       };
 
-      row.appendChild(swapButton);
-      card.appendChild(row);
+      options.appendChild(option);
     });
+
+    const footer = document.createElement("div");
+    footer.className = "modal-footer";
+
+    const cancel = document.createElement("button");
+    cancel.type = "button";
+    cancel.className = "modal-cancel";
+    cancel.textContent = "Cancelar";
+    cancel.onclick = close;
+
+    footer.appendChild(cancel);
+    dialog.append(heading, description, options, footer);
+    overlay.appendChild(dialog);
+
+    overlay.addEventListener("click", (event) => {
+      if (event.target === overlay) close();
+    });
+
+    document.addEventListener("keydown", function escapeModal(event) {
+      if (event.key === "Escape" && overlay.isConnected) {
+        close();
+        document.removeEventListener("keydown", escapeModal);
+      }
+    });
+
+    teamsContainer.appendChild(overlay);
+  }
+
+  [
+    { key: "teamA", label: "Equipo A", color: "team-a" },
+    { key: "teamB", label: "Equipo B", color: "team-b" }
+  ].forEach(({ key, label, color }) => {
+    const card = document.createElement("div");
+    card.className = `team-card ${color}`;
+
+    const header = document.createElement("div");
+    header.className = "team-header";
+
+    const titleGroup = document.createElement("div");
+    titleGroup.className = "team-title-group";
+
+    const title = document.createElement("h3");
+    title.textContent = label;
+
+    const score = document.createElement("span");
+    score.className = "team-score";
+    score.textContent = `${teamScore(currentTeams[key])} puntos`;
+
+    titleGroup.append(title, score);
+
+    const count = document.createElement("span");
+    count.className = "team-count";
+    count.textContent = `${currentTeams[key].length}/5`;
+
+    header.append(titleGroup, count);
+    card.appendChild(header);
+
+    [...currentTeams[key]]
+      .sort((a, b) =>
+        (a.suggestedRole || 99) - (b.suggestedRole || 99)
+      )
+      .forEach((player) => {
+        const row = document.createElement("div");
+        row.className = "team-player-row";
+
+        const info = document.createElement("div");
+        info.className = "team-player-info";
+
+        const name = document.createElement("strong");
+        name.className = "team-player-name";
+        name.textContent = player.name;
+
+        const details = document.createElement("div");
+        details.className = "team-player-details";
+
+        const medal = document.createElement("span");
+        medal.className = "team-player-medal";
+        medal.textContent = player.medal;
+
+        const role = player.suggestedRole;
+        const roleLabel = document.createElement("span");
+        roleLabel.className = "team-player-role";
+        roleLabel.textContent = role
+          ? `${roleIcons[role]} ${roleNames[role]}`
+          : "Rol por asignar";
+
+        details.append(medal, roleLabel);
+        info.append(name, details);
+
+        const actions = document.createElement("div");
+        actions.className = "team-player-actions";
+
+        const swapButton = iconButton(
+          `Intercambiar a ${player.name} con el otro equipo`,
+          swapIcon,
+          "swap-player-button"
+        );
+
+        swapButton.onclick = () => showSwapDialog(key, player);
+
+        actions.appendChild(swapButton);
+        row.append(info, actions);
+        card.appendChild(row);
+      });
 
     teamsContainer.appendChild(card);
   });
 
-  const shareButton = document.createElement("button");
-  shareButton.type = "button";
-  shareButton.className = "primary-button";
-  shareButton.textContent = "Copiar equipos";
+  const footer = document.createElement("div");
+  footer.className = "teams-footer";
 
-  shareButton.onclick = async () => {
+  const copyButton = document.createElement("button");
+  copyButton.type = "button";
+  copyButton.className = "primary-button";
+  copyButton.textContent = "Copiar equipos para WhatsApp";
+
+  copyButton.onclick = async () => {
     const message = [
       "DOTA BALANCE",
       "",
       "EQUIPO A",
-      ...currentTeams.teamA.map(
-        (p) =>
-          `${p.name} (${p.medal}) — ${
-            p.suggestedRole
-              ? `${p.suggestedRole} · ${roleNames[p.suggestedRole]}`
-              : "Rol por asignar"
-          }`
+      ...currentTeams.teamA.map((p) =>
+        `${p.name} (${p.medal}) — ${
+          p.suggestedRole
+            ? `${roleNames[p.suggestedRole]}`
+            : "Rol por asignar"
+        }`
       ),
       "",
       "EQUIPO B",
-      ...currentTeams.teamB.map(
-        (p) =>
-          `${p.name} (${p.medal}) — ${
-            p.suggestedRole
-              ? `${p.suggestedRole} · ${roleNames[p.suggestedRole]}`
-              : "Rol por asignar"
-          }`
+      ...currentTeams.teamB.map((p) =>
+        `${p.name} (${p.medal}) — ${
+          p.suggestedRole
+            ? `${roleNames[p.suggestedRole]}`
+            : "Rol por asignar"
+        }`
       )
     ].join("\n");
 
@@ -669,7 +824,8 @@ await saveSharedLobby();
     }
   };
 
-  teamsContainer.appendChild(shareButton);
+  footer.appendChild(copyButton);
+  teamsContainer.appendChild(footer);
 }
 
 balanceButton.onclick = async () => {
