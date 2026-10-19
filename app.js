@@ -318,7 +318,17 @@ function renderPlayers() {
     const deleteButton = document.createElement("button");
     deleteButton.type = "button";
     deleteButton.className = "delete-player-button";
-    deleteButton.textContent = "Eliminar";
+deleteButton.innerHTML = `
+  <svg viewBox="0 0 24 24" fill="none"
+       stroke="currentColor" stroke-width="1.8"
+       stroke-linecap="round" stroke-linejoin="round"
+       aria-hidden="true">
+    <path d="M3 6h18"/>
+    <path d="M8 6V4h8v2"/>
+    <path d="M19 6l-1 14H6L5 6"/>
+    <path d="M10 10v6M14 10v6"/>
+  </svg>
+`;
     deleteButton.setAttribute("aria-label", `Eliminar a ${player.name}`);
 
     deleteButton.onclick = async (event) => {
