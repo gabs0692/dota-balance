@@ -373,64 +373,101 @@ form.addEventListener("submit", async (event) => {
 
 // Encuentra el reparto con menor diferencia de medallas
 
+
+function getBestRoleAssignment(team) {
+  const roles = [1, 2, 3, 4, 5];
+  let bestScore = -Infinity;
+  let bestAssignment = [];
+
+  function search(index, remaining, assignment, score) {
+    if (index === team.length) {
+      if (score > bestScore) {
+        bestScore = score;
+        bestAssignment = [...assignment];
+      }
+      return;
+    }
+
+    const player = team[index];
+
+    for (const role of remaining) {
+      const rating = Number(player[`position_${role}`] ?? 3);
+
+      search(
+        index + 1,
+        remaining.filter((r) => r !== role),
+        [...assignment, { ...player, suggestedRole: role }],
+        score + rating
+      );
+    }
+  }
+
+  search(0, roles, [], 0);
+
+  return {
+    players: bestAssignment,
+    score: bestScore
+  };
+}
+
 function generateBalancedTeams(list) {
-
   let bestDifference = Infinity;
-
   const bestOptions = [];
 
-  // 10 jugadores: 252 combinaciones de 5
-
   for (let mask = 0; mask < 1024; mask++) {
-
-    const teamA = [];
-
-    const teamB = [];
+    const rawA = [];
+    const rawB = [];
 
     list.forEach((player, index) => {
-
       if (mask & (1 << index)) {
-
-        teamA.push(player);
-
+        rawA.push(player);
       } else {
-
-        teamB.push(player);
-
+        rawB.push(player);
       }
-
     });
 
-    if (teamA.length !== 5) continue;
+    if (rawA.length !== 5) continue;
 
-    const difference = Math.abs(
+    const resultA = getBestRoleAssignment(rawA);
+    const resultB = getBestRoleAssignment(rawB);
 
-      teamScore(teamA) - teamScore(teamB)
-
+    const medalDifference = Math.abs(
+      teamScore(rawA) - teamScore(rawB)
     );
 
-    if (difference < bestDifference) {
+    const roleDifference = Math.abs(
+      resultA.score - resultB.score
+    );
 
+    const totalRoleScore = resultA.score + resultB.score;
+
+    // Equilibrio: 50 % medallas y 50 % roles.
+    const medalPenalty = medalDifference / 35;
+
+    const rolePenalty =
+      0.7 * (roleDifference / 40) +
+      0.3 * ((50 - totalRoleScore) / 40);
+
+    const difference =
+      0.5 * medalPenalty +
+      0.5 * rolePenalty;
+
+    if (difference < bestDifference - 0.000001) {
       bestDifference = difference;
-
       bestOptions.length = 0;
-
     }
 
-    if (difference === bestDifference) {
-
-      bestOptions.push({ teamA, teamB });
-
+    if (Math.abs(difference - bestDifference) < 0.000001) {
+      bestOptions.push({
+        teamA: resultA.players,
+        teamB: resultB.players
+      });
     }
-
   }
 
   return bestOptions[
-
     Math.floor(Math.random() * bestOptions.length)
-
   ];
-
 }
 
 function renderTeams() {
