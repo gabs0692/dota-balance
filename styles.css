@@ -562,3 +562,101 @@ button:focus-visible {
     transition: none !important;
   }
 }
+
+/* Pool de jugadores: selección limpia y táctil */
+.player-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 30px auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 72px;
+  padding: 13px;
+  border: 1px solid #414959;
+  border-radius: 12px;
+  background: #252b38;
+  cursor: pointer;
+  transition: border-color 0.18s ease, background 0.18s ease;
+}
+
+.player-card.selected {
+  border-color: rgba(85, 217, 149, 0.7);
+  background: linear-gradient(
+    110deg,
+    rgba(85, 217, 149, 0.09),
+    #252b38 75%
+  );
+}
+
+.player-card:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 3px;
+}
+
+.player-info {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.player-info strong {
+  display: block;
+  font-size: 14px;
+}
+
+.player-info small {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.selection-check {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 1px solid #50596a;
+  border-radius: 50%;
+  color: #10131a;
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.player-card.selected .selection-check {
+  border-color: var(--green);
+  background: var(--green);
+}
+
+.delete-player-button {
+  min-height: 36px;
+  padding: 6px 9px;
+  border: 1px solid #4b414a;
+  border-radius: 9px;
+  background: transparent;
+  color: #c3bac5;
+  font-size: 11px;
+}
+
+.delete-player-button:hover {
+  border-color: #71353c;
+  background: rgba(200, 50, 62, 0.12);
+  color: #ff969d;
+}
+
+@media (max-width: 380px) {
+  .player-card {
+    grid-template-columns: minmax(0, 1fr) 26px;
+    gap: 9px;
+  }
+
+  .delete-player-button {
+    grid-column: 1 / -1;
+    justify-self: end;
+    min-height: 34px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .player-card {
+    transition: none;
+  }
+}
