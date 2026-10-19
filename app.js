@@ -352,8 +352,8 @@ deleteButton.innerHTML = `
       await loadPlayers();
     };
 
-    card.append(info, check, deleteButton);
-    playerList.appendChild(card);
+    card.append(info, deleteButton, check);
+playerList.appendChild(card);
   });
 }
 
