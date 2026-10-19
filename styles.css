@@ -1,16 +1,17 @@
 
+
 :root {
   color-scheme: dark;
-  --bg: #0b0b0e;
-  --panel: #151519;
-  --panel-light: #202025;
-  --border: #343238;
-  --text: #f4f1f1;
-  --muted: #aaa4aa;
-  --accent: #c8323e;
-  --accent-hover: #e3444f;
-  --green: #70d6a0;
-  --red-glow: rgba(200, 50, 62, 0.16);
+  --bg: #101116;
+  --panel: #1b1d24;
+  --panel-light: #292c35;
+  --border: #414550;
+  --text: #f5f5f7;
+  --muted: #b5b8c2;
+  --accent: #d93645;
+  --accent-hover: #f04b59;
+  --green: #55d995;
+  --red-glow: rgba(217, 54, 69, 0.22);
 }
 
 * {
