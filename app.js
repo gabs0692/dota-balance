@@ -51,6 +51,98 @@ let selectedIds = [];
 
 let currentTeams = null;
 
+let lobbyChannel = null;
+
+function isValidSharedTeams(teams) {
+  return (
+    teams &&
+    Array.isArray(teams.teamA) &&
+    Array.isArray(teams.teamB) &&
+    teams.teamA.length === 5 &&
+    teams.teamB.length === 5
+  );
+}
+
+async function loadSharedLobby() {
+  const { data, error } = await db
+    .from("lobby_state")
+    .select("teams")
+    .eq("id", 1)
+    .maybeSingle();
+
+  if (error) {
+    showError(error);
+    return;
+  }
+
+  const teams = data?.teams;
+
+  if (isValidSharedTeams(teams)) {
+    currentTeams = teams;
+
+    selectedIds = [
+      ...teams.teamA,
+      ...teams.teamB
+    ].map((player) => player.id);
+
+    renderPlayers();
+    renderTeams();
+  }
+}
+
+async function saveSharedLobby() {
+  if (!isValidSharedTeams(currentTeams)) return;
+
+  const { error } = await db
+    .from("lobby_state")
+    .upsert(
+      {
+        id: 1,
+        teams: currentTeams,
+        updated_at: new Date().toISOString()
+      },
+      { onConflict: "id" }
+    );
+
+  if (error) {
+    showError(error);
+  }
+}
+
+function setupLobbyRealtime() {
+  if (lobbyChannel) return;
+
+  lobbyChannel = db
+    .channel("dota-balance-lobby")
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "lobby_state"
+      },
+      (payload) => {
+        const teams = payload.new?.teams;
+
+        if (!isValidSharedTeams(teams)) return;
+
+        currentTeams = teams;
+
+        selectedIds = [
+          ...teams.teamA,
+          ...teams.teamB
+        ].map((player) => player.id);
+
+        renderPlayers();
+        renderTeams();
+      }
+    )
+    .subscribe((status) => {
+      console.log("Lobby Realtime:", status);
+    });
+}
+
+
 function showError(error) {
 
   console.error(error);
@@ -545,11 +637,13 @@ function renderTeams() {
 
         const otherIndex = chosen - 1;
         const replacement = otherTeam[otherIndex];
+     
+currentTeams[key][index] = replacement;
+otherTeam[otherIndex] = player;
 
-        currentTeams[key][index] = replacement;
-        otherTeam[otherIndex] = player;
+renderTeams();
+await saveSharedLobby();
 
-        renderTeams();
       };
 
       row.appendChild(swapButton);
@@ -620,12 +714,13 @@ balanceButton.onclick = () => {
 
   );
 
-  currentTeams = generateBalancedTeams(selectedPlayers);
+currentTeams = generateBalancedTeams(selectedPlayers);
 
-  renderTeams();
+renderTeams();
+await saveSharedLobby();
 
 };
 
-// Carga los jugadores desde Supabase al abrir la web
+setupLobbyRealtime();
 
-loadPlayers()
+loadPlayers().then(loadSharedLobby);
