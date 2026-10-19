@@ -627,19 +627,32 @@ button:focus-visible {
 }
 
 .delete-player-button {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
   min-height: 36px;
-  padding: 6px 9px;
-  border: 1px solid #4b414a;
+  padding: 0;
+  border: 1px solid transparent;
   border-radius: 9px;
   background: transparent;
-  color: #c3bac5;
-  font-size: 11px;
+  color: #98636d;
+  opacity: 0.8;
+  cursor: pointer;
 }
 
-.delete-player-button:hover {
-  border-color: #71353c;
-  background: rgba(200, 50, 62, 0.12);
-  color: #ff969d;
+.delete-player-button:hover,
+.delete-player-button:focus-visible {
+  border-color: #56313a;
+  background: rgba(150, 45, 65, 0.10);
+  color: #c17b87;
+  opacity: 1;
+}
+
+.delete-player-button svg {
+  width: 17px;
+  height: 17px;
 }
 
 @media (max-width: 380px) {
