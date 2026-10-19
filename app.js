@@ -244,141 +244,107 @@ async function loadPlayers() {
 }
 
 function renderPlayers() {
-
   playerList.replaceChildren();
 
   playerCount.textContent =
-
     `${players.length} jugadores · ${selectedIds.length}/10 elegidos`;
 
   if (!players.length) {
-
     const empty = document.createElement("p");
-
     empty.className = "empty-state";
-
     empty.textContent = "Todavía no hay jugadores registrados.";
-
     playerList.appendChild(empty);
-
     return;
-
   }
 
   players.forEach((player) => {
+    const selected = selectedIds.includes(player.id);
 
     const card = document.createElement("div");
-
-    card.className = "player-card";
+    card.className = `player-card${selected ? " selected" : ""}`;
+    card.setAttribute("role", "button");
+    card.setAttribute("tabindex", "0");
+    card.setAttribute("aria-pressed", String(selected));
 
     const info = document.createElement("div");
+    info.className = "player-info";
 
     const name = document.createElement("strong");
-
     name.textContent = player.name;
 
     const details = document.createElement("small");
-
     details.textContent =
-
       `${player.medal} · Posiciones: ` +
-
       [1, 2, 3, 4, 5]
-
-        .map((n) => player[`position_${n}`])
-
+        .map((n) => player[`position_${n}`] ?? 3)
         .join("/");
 
     info.append(name, details);
 
-    const actions = document.createElement("div");
+    const check = document.createElement("span");
+    check.className = "selection-check";
+    check.setAttribute("aria-hidden", "true");
+    check.textContent = selected ? "✓" : "";
 
-    actions.style.display = "flex";
-
-    actions.style.gap = "6px";
-
-    actions.style.flexWrap = "wrap";
-
-    const selectButton = document.createElement("button");
-
-    selectButton.type = "button";
-
-    selectButton.className = "remove-button";
-
-    selectButton.textContent = selectedIds.includes(player.id)
-
-      ? "Quitar"
-
-      : "Elegir";
-
-    selectButton.onclick = () => {
-
+    function toggleSelection() {
       if (selectedIds.includes(player.id)) {
-
         selectedIds = selectedIds.filter((id) => id !== player.id);
-
       } else {
-
         if (selectedIds.length >= 10) {
-
           alert("Solo puedes elegir 10 jugadores.");
-
           return;
-
         }
 
         selectedIds.push(player.id);
-
       }
 
-      currentTeams = null;
-
       renderPlayers();
+    }
 
-      renderTeams();
+    card.addEventListener("click", (event) => {
+      if (event.target.closest(".delete-player-button")) return;
+      toggleSelection();
+    });
 
-    };
+    card.addEventListener("keydown", (event) => {
+      if (event.target !== card) return;
+
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        toggleSelection();
+      }
+    });
 
     const deleteButton = document.createElement("button");
-
     deleteButton.type = "button";
-
-    deleteButton.className = "remove-button";
-
+    deleteButton.className = "delete-player-button";
     deleteButton.textContent = "Eliminar";
+    deleteButton.setAttribute("aria-label", `Eliminar a ${player.name}`);
 
-    deleteButton.onclick = async () => {
+    deleteButton.onclick = async (event) => {
+      event.stopPropagation();
 
-      if (!confirm(`¿Eliminar a ${player.name}?`)) return;
+      if (!confirm(
+        `¿Eliminar definitivamente a ${player.name} del pool de jugadores?`
+      )) return;
 
       const { error } = await db
-
         .from("players")
-
         .delete()
-
         .eq("id", player.id);
 
       if (error) {
-
         showError(error);
-
         return;
-
       }
 
+      selectedIds = selectedIds.filter((id) => id !== player.id);
       await loadPlayers();
-
     };
 
-    actions.append(selectButton, deleteButton);
-
-    card.append(info, actions);
-
+    card.append(info, check, deleteButton);
     playerList.appendChild(card);
-
   });
-
 }
 
 form.addEventListener("submit", async (event) => {
