@@ -589,7 +589,9 @@ function renderTeams() {
 
     card.appendChild(title);
 
-    currentTeams[key].forEach((player, index) => {
+    [...currentTeams[key]]
+  .sort((a, b) => (a.suggestedRole || 99) - (b.suggestedRole || 99))
+  .forEach((player) => {
       const row = document.createElement("p");
 
       const role = player.suggestedRole;
