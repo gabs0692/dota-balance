@@ -1,6 +1,6 @@
 
 const STORAGE_KEY = "dota-balance-players";
-const SUPABASE_URL = "https://rluyrtwszkqalnklsnky.supabase.co/rest/v1/";
+const SUPABASE_URL = "https://rluyrtwszkqalnklsnky.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_xC5ZqWkWU_XTe8X805nX9w_nku-Aoyq";
 
 const db = window.supabase.createClient(
