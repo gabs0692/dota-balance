@@ -470,152 +470,134 @@ function generateBalancedTeams(list) {
   ];
 }
 
-function renderTeams() {
 
+function renderTeams() {
   teamsContainer.replaceChildren();
 
   if (!currentTeams) return;
 
+  const roleNames = {
+    1: "Carry",
+    2: "Mid",
+    3: "Offlane",
+    4: "Support",
+    5: "Hard Support"
+  };
+
   [
-
     { key: "teamA", label: "Equipo A" },
-
     { key: "teamB", label: "Equipo B" }
-
   ].forEach(({ key, label }) => {
-
     const card = document.createElement("div");
-
     card.className = "team-card";
 
     const title = document.createElement("h3");
-
     title.textContent =
-
       `${label} · ${teamScore(currentTeams[key])} puntos`;
 
     card.appendChild(title);
 
     currentTeams[key].forEach((player, index) => {
-
       const row = document.createElement("p");
 
-      row.textContent = `${player.name} (${player.medal}) `;
+      const role = player.suggestedRole;
+      const roleText = role
+        ? `${role} · ${roleNames[role]}`
+        : "Rol por asignar";
+
+      const playerText = document.createElement("span");
+      playerText.textContent =
+        `${player.name} (${player.medal}) — ${roleText} `;
+
+      row.appendChild(playerText);
 
       const swapButton = document.createElement("button");
-
       swapButton.type = "button";
-
       swapButton.className = "remove-button";
-
       swapButton.textContent = "Intercambiar";
 
       swapButton.onclick = () => {
-
-        const otherKey = key === "teamA" ? "teamB" : "teamA";
+        const otherKey =
+          key === "teamA" ? "teamB" : "teamA";
 
         const otherTeam = currentTeams[otherKey];
 
         const options = otherTeam
-
           .map((p, i) => `${i + 1}. ${p.name}`)
-
           .join("\n");
 
         const answer = prompt(
-
           `Intercambiar a ${player.name} con:\n${options}\n\nEscribe un número del 1 al 5:`
-
         );
 
         if (answer === null) return;
 
         const chosen = Number(answer);
 
-        if (!Number.isInteger(chosen) ||
-
-            chosen < 1 || chosen > 5) {
-
+        if (
+          !Number.isInteger(chosen) ||
+          chosen < 1 ||
+          chosen > 5
+        ) {
           alert("Elige un número entre 1 y 5.");
-
           return;
-
         }
 
         const otherIndex = chosen - 1;
-
         const replacement = otherTeam[otherIndex];
 
         currentTeams[key][index] = replacement;
-
         otherTeam[otherIndex] = player;
 
         renderTeams();
-
       };
 
       row.appendChild(swapButton);
-
       card.appendChild(row);
-
     });
 
     teamsContainer.appendChild(card);
-
   });
 
   const shareButton = document.createElement("button");
-
   shareButton.type = "button";
-
   shareButton.className = "primary-button";
-
   shareButton.textContent = "Copiar equipos";
 
   shareButton.onclick = async () => {
-
     const message = [
-
       "DOTA BALANCE",
-
       "",
-
       "EQUIPO A",
-
       ...currentTeams.teamA.map(
-
-        (p) => `${p.name} (${p.medal})`
-
+        (p) =>
+          `${p.name} (${p.medal}) — ${
+            p.suggestedRole
+              ? `${p.suggestedRole} · ${roleNames[p.suggestedRole]}`
+              : "Rol por asignar"
+          }`
       ),
-
       "",
-
       "EQUIPO B",
-
       ...currentTeams.teamB.map(
-
-        (p) => `${p.name} (${p.medal})`
-
+        (p) =>
+          `${p.name} (${p.medal}) — ${
+            p.suggestedRole
+              ? `${p.suggestedRole} · ${roleNames[p.suggestedRole]}`
+              : "Rol por asignar"
+          }`
       )
-
     ].join("\n");
 
     try {
-
       await navigator.clipboard.writeText(message);
-
       alert("Equipos copiados para WhatsApp.");
-
     } catch {
-
       prompt("Copia los equipos:", message);
-
     }
-
   };
 
   teamsContainer.appendChild(shareButton);
-
 }
 
 balanceButton.onclick = () => {
