@@ -299,21 +299,32 @@ button:focus-visible {
   margin-top: 16px;
 }
 
+
 .team-card {
   min-width: 0;
-  padding: 14px;
-  border: 1px solid #423037;
+  padding: 15px;
+  border: 1px solid #454852;
+  border-top: 3px solid var(--accent);
   border-radius: 13px;
-  background: linear-gradient(160deg, #1c171b, #141418);
+  background: linear-gradient(155deg, #252730, #1b1d24);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.18);
 }
 
 .team-card h3 {
   margin: 0 0 12px;
-  padding-bottom: 9px;
-  border-bottom: 1px solid #493036;
-  color: #f07880;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #454852;
+  color: #ff737d;
   font-size: 16px;
   letter-spacing: 0.2px;
+}
+
+.team-card:nth-child(even) {
+  border-top-color: var(--green);
+}
+
+.team-card:nth-child(even) h3 {
+  color: var(--green);
 }
 
 .team-card p {
