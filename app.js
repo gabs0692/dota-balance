@@ -3,283 +3,610 @@ const STORAGE_KEY = "dota-balance-players";
 const SUPABASE_URL = "https://rluyrtwszkqalnklsnky.supabase.co/rest/v1/";
 const SUPABASE_ANON_KEY = "sb_publishable_xC5ZqWkWU_XTe8X805nX9w_nku-Aoyq";
 
+const db = window.supabase.createClient(
+
+  SUPABASE_URL,
+
+  SUPABASE_ANON_KEY
+
+);
+
 const form = document.getElementById("player-form");
+
 const nameInput = document.getElementById("player-name");
+
 const medalInput = document.getElementById("player-medal");
+
 const playerList = document.getElementById("player-list");
+
 const playerCount = document.getElementById("player-count");
+
 const balanceButton = document.getElementById("balance-button");
+
 const teamsContainer = document.getElementById("teams");
 
 const medalRank = {
+
   Herald: 1,
+
   Guardian: 2,
+
   Crusader: 3,
+
   Archon: 4,
+
   Legend: 5,
+
   Ancient: 6,
+
   Divine: 7,
+
   Immortal: 8
+
 };
 
-let players = loadPlayers();
+let players = [];
+
 let selectedIds = [];
+
 let currentTeams = null;
 
-function loadPlayers() {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    const parsed = saved ? JSON.parse(saved) : [];
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
+function showError(error) {
+
+  console.error(error);
+
+  alert("Error de Supabase: " + (error.message || error));
+
 }
 
-function savePlayers() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(players));
+function teamScore(team) {
+
+  return team.reduce(
+
+    (sum, player) => sum + (medalRank[player.medal] || 0),
+
+    0
+
+  );
+
+}
+
+// Campos para calificar las cinco posiciones
+
+const roleFields = document.createElement("div");
+
+roleFields.style.marginTop = "12px";
+
+const roleTitle = document.createElement("p");
+
+roleTitle.textContent = "Dominio de posiciones (1 = bajo, 5 = alto)";
+
+roleFields.appendChild(roleTitle);
+
+for (let position = 1; position <= 5; position++) {
+
+  const label = document.createElement("label");
+
+  label.textContent = `Posición ${position}`;
+
+  label.htmlFor = `position-${position}`;
+
+  const select = document.createElement("select");
+
+  select.id = `position-${position}`;
+
+  for (let rating = 1; rating <= 5; rating++) {
+
+    const option = document.createElement("option");
+
+    option.value = rating;
+
+    option.textContent = rating;
+
+    option.selected = rating === 3;
+
+    select.appendChild(option);
+
+  }
+
+  roleFields.append(label, select);
+
+}
+
+const submitButton = form.querySelector('button[type="submit"]');
+
+form.insertBefore(roleFields, submitButton);
+
+async function loadPlayers() {
+
+  const { data, error } = await db
+
+    .from("players")
+
+    .select("*")
+
+    .order("created_at", { ascending: true });
+
+  if (error) {
+
+    showError(error);
+
+    return;
+
+  }
+
+  players = data || [];
+
+  selectedIds = selectedIds.filter((id) =>
+
+    players.some((player) => player.id === id)
+
+  );
+
+  currentTeams = null;
+
+  renderPlayers();
+
+  renderTeams();
+
 }
 
 function renderPlayers() {
+
   playerList.replaceChildren();
 
   playerCount.textContent =
-    `${players.length} ${players.length === 1 ? "jugador" : "jugadores"}`;
+
+    `${players.length} jugadores · ${selectedIds.length}/10 elegidos`;
 
   if (!players.length) {
+
     const empty = document.createElement("p");
+
     empty.className = "empty-state";
+
     empty.textContent = "Todavía no hay jugadores registrados.";
+
     playerList.appendChild(empty);
+
     return;
+
   }
 
   players.forEach((player) => {
+
     const card = document.createElement("div");
+
     card.className = "player-card";
 
     const info = document.createElement("div");
+
     const name = document.createElement("strong");
-    const medal = document.createElement("small");
 
     name.textContent = player.name;
-    medal.textContent = player.medal;
-    info.append(name, document.createElement("br"), medal);
+
+    const details = document.createElement("small");
+
+    details.textContent =
+
+      `${player.medal} · Posiciones: ` +
+
+      [1, 2, 3, 4, 5]
+
+        .map((n) => player[`position_${n}`])
+
+        .join("/");
+
+    info.append(name, details);
 
     const actions = document.createElement("div");
+
     actions.style.display = "flex";
+
     actions.style.gap = "6px";
+
     actions.style.flexWrap = "wrap";
 
     const selectButton = document.createElement("button");
+
     selectButton.type = "button";
+
     selectButton.className = "remove-button";
+
     selectButton.textContent = selectedIds.includes(player.id)
-      ? "Seleccionado"
+
+      ? "Quitar"
+
       : "Elegir";
 
-    selectButton.addEventListener("click", () => {
+    selectButton.onclick = () => {
+
       if (selectedIds.includes(player.id)) {
+
         selectedIds = selectedIds.filter((id) => id !== player.id);
+
       } else {
+
         if (selectedIds.length >= 10) {
-          alert("Puedes seleccionar un máximo de 10 jugadores.");
+
+          alert("Solo puedes elegir 10 jugadores.");
+
           return;
+
         }
+
         selectedIds.push(player.id);
+
       }
 
       currentTeams = null;
+
       renderPlayers();
+
       renderTeams();
-    });
 
-    const removeButton = document.createElement("button");
-    removeButton.type = "button";
-    removeButton.className = "remove-button";
-    removeButton.textContent = "Eliminar";
+    };
 
-    removeButton.addEventListener("click", () => {
-      players = players.filter((item) => item.id !== player.id);
-      selectedIds = selectedIds.filter((id) => id !== player.id);
-      savePlayers();
-      currentTeams = null;
-      renderPlayers();
-      renderTeams();
-    });
+    const deleteButton = document.createElement("button");
 
-    actions.append(selectButton, removeButton);
+    deleteButton.type = "button";
+
+    deleteButton.className = "remove-button";
+
+    deleteButton.textContent = "Eliminar";
+
+    deleteButton.onclick = async () => {
+
+      if (!confirm(`¿Eliminar a ${player.name}?`)) return;
+
+      const { error } = await db
+
+        .from("players")
+
+        .delete()
+
+        .eq("id", player.id);
+
+      if (error) {
+
+        showError(error);
+
+        return;
+
+      }
+
+      await loadPlayers();
+
+    };
+
+    actions.append(selectButton, deleteButton);
+
     card.append(info, actions);
+
     playerList.appendChild(card);
+
   });
+
 }
 
-form.addEventListener("submit", (event) => {
+form.addEventListener("submit", async (event) => {
+
   event.preventDefault();
 
   const name = nameInput.value.trim();
-  const medal = medalInput.value;
 
-  if (!name) {
-    nameInput.focus();
+  if (!name) return;
+
+  const { data: existing, error: checkError } = await db
+
+    .from("players")
+
+    .select("name");
+
+  if (checkError) {
+
+    showError(checkError);
+
     return;
+
   }
 
-  if (players.some((p) => p.name.toLowerCase() === name.toLowerCase())) {
+  if (existing.some(
+
+    (p) => p.name.toLowerCase() === name.toLowerCase()
+
+  )) {
+
     alert("Ese jugador ya está registrado.");
+
     return;
+
   }
 
-  players.push({
-    id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+  const newPlayer = {
+
     name,
-    medal
-  });
 
-  savePlayers();
-  currentTeams = null;
-  renderPlayers();
-  renderTeams();
-  nameInput.value = "";
-  nameInput.focus();
-});
+    medal: medalInput.value
 
-function teamScore(team) {
-  return team.reduce((sum, player) => sum + medalRank[player.medal], 0);
-}
+  };
 
-function generateBalancedTeams(list) {
-  const shuffled = [...list].sort(() => Math.random() - 0.5);
-  shuffled.sort(
-    (a, b) => medalRank[b.medal] - medalRank[a.medal]
-  );
+  for (let n = 1; n <= 5; n++) {
 
-  let bestTeams = null;
-  let bestDifference = Infinity;
+    newPlayer[`position_${n}`] =
 
-  for (let attempt = 0; attempt < 500; attempt++) {
-    const teamA = [];
-    const teamB = [];
+      Number(document.getElementById(`position-${n}`).value);
 
-    const randomized = [...shuffled].sort(() => Math.random() - 0.5);
-    randomized.sort(
-      (a, b) => medalRank[b.medal] - medalRank[a.medal]
-    );
+  }
 
-    randomized.forEach((player) => {
-      if (teamA.length >= 5) {
-        teamB.push(player);
-      } else if (teamB.length >= 5) {
-        teamA.push(player);
-      } else if (teamScore(teamA) <= teamScore(teamB)) {
-        teamA.push(player);
-      } else {
-        teamB.push(player);
-      }
-    });
+  submitButton.disabled = true;
 
-    const difference = Math.abs(teamScore(teamA) - teamScore(teamB));
+  try {
 
-    if (teamA.length === 5 && teamB.length === 5 &&
-        difference < bestDifference) {
-      bestDifference = difference;
-      bestTeams = { teamA, teamB };
+    const { error } = await db
+
+      .from("players")
+
+      .insert(newPlayer);
+
+    if (error) {
+
+      showError(error);
+
+      return;
+
     }
 
-    if (bestDifference === 0) break;
+    form.reset();
+
+    await loadPlayers();
+
+    alert("Jugador guardado en Supabase.");
+
+  } finally {
+
+    submitButton.disabled = false;
+
   }
 
-  return bestTeams;
+});
+
+// Encuentra el reparto con menor diferencia de medallas
+
+function generateBalancedTeams(list) {
+
+  let bestDifference = Infinity;
+
+  const bestOptions = [];
+
+  // 10 jugadores: 252 combinaciones de 5
+
+  for (let mask = 0; mask < 1024; mask++) {
+
+    const teamA = [];
+
+    const teamB = [];
+
+    list.forEach((player, index) => {
+
+      if (mask & (1 << index)) {
+
+        teamA.push(player);
+
+      } else {
+
+        teamB.push(player);
+
+      }
+
+    });
+
+    if (teamA.length !== 5) continue;
+
+    const difference = Math.abs(
+
+      teamScore(teamA) - teamScore(teamB)
+
+    );
+
+    if (difference < bestDifference) {
+
+      bestDifference = difference;
+
+      bestOptions.length = 0;
+
+    }
+
+    if (difference === bestDifference) {
+
+      bestOptions.push({ teamA, teamB });
+
+    }
+
+  }
+
+  return bestOptions[
+
+    Math.floor(Math.random() * bestOptions.length)
+
+  ];
+
 }
 
 function renderTeams() {
+
   teamsContainer.replaceChildren();
 
   if (!currentTeams) return;
 
-  const teamNames = [
-    { key: "teamA", label: "Equipo A" },
-    { key: "teamB", label: "Equipo B" }
-  ];
+  [
 
-  teamNames.forEach(({ key, label }) => {
+    { key: "teamA", label: "Equipo A" },
+
+    { key: "teamB", label: "Equipo B" }
+
+  ].forEach(({ key, label }) => {
+
     const card = document.createElement("div");
+
     card.className = "team-card";
 
-    const heading = document.createElement("h3");
-    heading.textContent = `${label} · ${teamScore(currentTeams[key])} puntos`;
-    card.appendChild(heading);
+    const title = document.createElement("h3");
 
-    currentTeams[key].forEach((player) => {
+    title.textContent =
+
+      `${label} · ${teamScore(currentTeams[key])} puntos`;
+
+    card.appendChild(title);
+
+    currentTeams[key].forEach((player, index) => {
+
       const row = document.createElement("p");
-      row.textContent = `${player.name} — ${player.medal} `;
 
-      const moveButton = document.createElement("button");
-      moveButton.type = "button";
-      moveButton.className = "remove-button";
-      moveButton.textContent = "Cambiar";
+      row.textContent = `${player.name} (${player.medal}) `;
 
-      moveButton.addEventListener("click", () => {
+      const swapButton = document.createElement("button");
+
+      swapButton.type = "button";
+
+      swapButton.className = "remove-button";
+
+      swapButton.textContent = "Intercambiar";
+
+      swapButton.onclick = () => {
+
         const otherKey = key === "teamA" ? "teamB" : "teamA";
+
         const otherTeam = currentTeams[otherKey];
 
-        const ownTeam = currentTeams[key];
-        const playerIndex = ownTeam.findIndex((p) => p.id === player.id);
+        const options = otherTeam
 
-        if (playerIndex < 0 || otherTeam.length >= 5) return;
+          .map((p, i) => `${i + 1}. ${p.name}`)
 
-        ownTeam.splice(playerIndex, 1);
-        otherTeam.push(player);
+          .join("\n");
+
+        const answer = prompt(
+
+          `Intercambiar a ${player.name} con:\n${options}\n\nEscribe un número del 1 al 5:`
+
+        );
+
+        if (answer === null) return;
+
+        const chosen = Number(answer);
+
+        if (!Number.isInteger(chosen) ||
+
+            chosen < 1 || chosen > 5) {
+
+          alert("Elige un número entre 1 y 5.");
+
+          return;
+
+        }
+
+        const otherIndex = chosen - 1;
+
+        const replacement = otherTeam[otherIndex];
+
+        currentTeams[key][index] = replacement;
+
+        otherTeam[otherIndex] = player;
+
         renderTeams();
-      });
 
-      row.appendChild(moveButton);
+      };
+
+      row.appendChild(swapButton);
+
       card.appendChild(row);
+
     });
 
     teamsContainer.appendChild(card);
+
   });
 
   const shareButton = document.createElement("button");
+
   shareButton.type = "button";
+
   shareButton.className = "primary-button";
+
   shareButton.textContent = "Copiar equipos";
 
-  shareButton.addEventListener("click", async () => {
-    const message = ["DOTA BALANCE", ""]
-      .concat(
-        ["Equipo A", ...currentTeams.teamA.map((p) => `${p.name} (${p.medal})`), "",
-         "Equipo B", ...currentTeams.teamB.map((p) => `${p.name} (${p.medal})`)]
+  shareButton.onclick = async () => {
+
+    const message = [
+
+      "DOTA BALANCE",
+
+      "",
+
+      "EQUIPO A",
+
+      ...currentTeams.teamA.map(
+
+        (p) => `${p.name} (${p.medal})`
+
+      ),
+
+      "",
+
+      "EQUIPO B",
+
+      ...currentTeams.teamB.map(
+
+        (p) => `${p.name} (${p.medal})`
+
       )
-      .join("\n");
+
+    ].join("\n");
 
     try {
+
       await navigator.clipboard.writeText(message);
-      alert("Equipos copiados. Ya puedes pegarlos en WhatsApp.");
+
+      alert("Equipos copiados para WhatsApp.");
+
     } catch {
-      prompt("Copia tus equipos desde aquí:", message);
+
+      prompt("Copia los equipos:", message);
+
     }
-  });
+
+  };
 
   teamsContainer.appendChild(shareButton);
+
 }
 
-balanceButton.addEventListener("click", () => {
+balanceButton.onclick = () => {
+
   if (selectedIds.length !== 10) {
-    alert(`Selecciona exactamente 10 jugadores. Has seleccionado ${selectedIds.length}.`);
+
+    alert(
+
+      `Debes elegir 10 jugadores. Tienes ${selectedIds.length}.`
+
+    );
+
     return;
+
   }
 
-  const selectedPlayers = players.filter((p) => selectedIds.includes(p.id));
+  const selectedPlayers = selectedIds.map((id) =>
+
+    players.find((player) => player.id === id)
+
+  );
+
   currentTeams = generateBalancedTeams(selectedPlayers);
 
-  if (!currentTeams) {
-    alert("No se pudieron generar los equipos. Inténtalo de nuevo.");
-    return;
-  }
-
   renderTeams();
-});
 
-renderPlayers();
-renderTeams();
+};
+
+// Carga los jugadores desde Supabase al abrir la web
+
+loadPlayers()
