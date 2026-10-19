@@ -608,7 +608,7 @@ function renderTeams() {
       swapButton.className = "remove-button";
       swapButton.textContent = "Intercambiar";
 
-      swapButton.onclick = () => {
+      swapButton.onclick = async () => {
         const otherKey =
           key === "teamA" ? "teamB" : "teamA";
 
