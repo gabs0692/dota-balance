@@ -694,7 +694,7 @@ await saveSharedLobby();
   teamsContainer.appendChild(shareButton);
 }
 
-balanceButton.onclick = () => {
+balanceButton.onclick = async () => {
 
   if (selectedIds.length !== 10) {
 
