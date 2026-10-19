@@ -1,0 +1,83 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10151f">
+  <meta name="description" content="Crea equipos equilibrados de Dota 2 con tus amigos.">
+  <title>Dota Balance</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-icon">D</span>
+      <div>
+        <h1>Dota Balance</h1>
+        <p>Juega en equipo. Compite en equilibrio.</p>
+      </div>
+    </div>
+    <span class="status">BETA</span>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <p class="eyebrow">TU GRUPO · TU EQUIPO</p>
+      <h2>Que gane el mejor equipo.</h2>
+      <p>Organiza a tus amigos y crea dos equipos equilibrados para tu próxima partida.</p>
+    </section>
+
+    <section class="panel">
+      <div class="section-heading">
+        <div>
+          <h2>Jugadores</h2>
+          <p>Registra a los integrantes de tu grupo.</p>
+        </div>
+        <span id="player-count" class="counter">0 jugadores</span>
+      </div>
+
+      <form id="player-form">
+        <label for="player-name">Nombre del jugador</label>
+        <input id="player-name" type="text" placeholder="Ej. Ghinno" maxlength="40" required>
+
+        <label for="player-medal">Medalla de Dota 2</label>
+        <select id="player-medal" required>
+          <option value="Herald">Herald</option>
+          <option value="Guardian">Guardian</option>
+          <option value="Crusader">Crusader</option>
+          <option value="Archon">Archon</option>
+          <option value="Legend">Legend</option>
+          <option value="Ancient">Ancient</option>
+          <option value="Divine">Divine</option>
+          <option value="Immortal">Immortal</option>
+        </select>
+
+        <button type="submit" class="primary-button">Agregar jugador</button>
+      </form>
+
+      <div id="player-list" class="player-list">
+        <p class="empty-state">Todavía no hay jugadores registrados.</p>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="section-heading">
+        <div>
+          <h2>Crear equipos</h2>
+          <p>Selecciona 10 jugadores para equilibrar la partida.</p>
+        </div>
+      </div>
+      <p class="hint">Primero registraremos a tus amigos. Después añadiremos la selección y el balance automático.</p>
+      <button id="balance-button" class="primary-button" type="button">
+        Generar equipos
+      </button>
+      <div id="teams" class="teams"></div>
+    </section>
+
+    <p class="footer-note">Dota Balance · Hecho para tu stack.</p>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
