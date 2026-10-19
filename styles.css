@@ -24,15 +24,25 @@ html {
 }
 
 body {
+
   margin: 0;
+
   min-height: 100vh;
+
   background:
-    radial-gradient(ellipse at 50% 0%, rgba(145, 28, 39, 0.17), transparent 48%),
+
+    radial-gradient(ellipse at 50% 0%, rgba(217, 54, 69, 0.09), transparent 50%),
+
     var(--bg);
+
   color: var(--text);
+
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
   line-height: 1.5;
+
   -webkit-font-smoothing: antialiased;
+
 }
 
 button,
@@ -47,13 +57,21 @@ button {
 }
 
 .topbar {
+
   display: flex;
+
   align-items: center;
+
   justify-content: space-between;
+
   gap: 12px;
+
   padding: 14px max(16px, calc((100% - 900px) / 2));
-  border-bottom: 1px solid #38272a;
-  background: rgba(11, 11, 14, 0.94);
+
+  border-bottom: 1px solid var(--border);
+
+  background: #191e29;
+
 }
 
 .brand {
@@ -135,12 +153,19 @@ button {
 }
 
 .panel {
+
   margin: 15px 0;
+
   padding: 19px;
+
   border: 1px solid var(--border);
+
   border-radius: 15px;
-  background: linear-gradient(155deg, #19191e, #121216);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+
+  background: linear-gradient(155deg, #252b38, #1e2430);
+
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+
 }
 
 .section-heading {
@@ -164,14 +189,23 @@ button {
 }
 
 .counter {
+
   flex-shrink: 0;
+
   padding: 5px 9px;
-  border: 1px solid #383238;
+
+  border: 1px solid #414b5d;
+
   border-radius: 8px;
-  background: #222025;
-  color: #e3dce0;
+
+  background: #303746;
+
+  color: var(--text);
+
   font-size: 12px;
+
   font-variant-numeric: tabular-nums;
+
 }
 
 form {
@@ -180,33 +214,55 @@ form {
 }
 
 label {
+
   margin-top: 7px;
-  color: #ded9dd;
+
+  color: #e3e7ef;
+
   font-size: 13px;
+
   font-weight: 650;
+
 }
 
 input,
+
 select {
+
   width: 100%;
+
   min-height: 48px;
+
   padding: 12px;
-  border: 1px solid #39353c;
+
+  border: 1px solid #454e60;
+
   border-radius: 10px;
+
   outline: none;
-  background: #0e0e12;
+
+  background: #252b38;
+
   color: var(--text);
+
   font-size: 16px;
+
 }
 
 input::placeholder {
-  color: #77717a;
+
+  color: #b0b7c5;
+
 }
 
 input:focus,
+
 select:focus {
+
   border-color: var(--accent);
+
   box-shadow: 0 0 0 3px var(--red-glow);
+
 }
 
 button {
@@ -245,14 +301,23 @@ button:focus-visible {
 }
 
 .player-card {
+
   display: flex;
+
   align-items: center;
+
   justify-content: space-between;
+
   gap: 12px;
+
   padding: 12px;
-  border: 1px solid #302e34;
+
+  border: 1px solid #414959;
+
   border-radius: 11px;
-  background: #17171c;
+
+  background: #252b38;
+
 }
 
 .player-card strong {
@@ -285,10 +350,19 @@ button:focus-visible {
 }
 
 .hint {
+
   padding: 12px;
-  border: 1px solid #373038;
+
+  border: 1px solid #414959;
+
   border-radius: 10px;
-  background: #1b181d;
+
+  background: #303746;
+
+  color: #dce2ed;
+
+  font-size: 13px;
+
 }
 
 .teams {
@@ -298,32 +372,50 @@ button:focus-visible {
   margin-top: 16px;
 }
 
-
 .team-card {
+
   min-width: 0;
+
   padding: 15px;
-  border: 1px solid #454852;
+
+  border: 1px solid #454e60;
+
   border-top: 3px solid var(--accent);
+
   border-radius: 13px;
-  background: linear-gradient(155deg, #252730, #1b1d24);
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.18);
+
+  background: linear-gradient(155deg, #292f3c, #222834);
+
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.16);
+
 }
 
 .team-card h3 {
+
   margin: 0 0 12px;
+
   padding-bottom: 10px;
-  border-bottom: 1px solid #454852;
+
+  border-bottom: 1px solid #454e60;
+
   color: #ff737d;
+
   font-size: 16px;
+
   letter-spacing: 0.2px;
+
 }
 
 .team-card:nth-child(even) {
+
   border-top-color: var(--green);
+
 }
 
 .team-card:nth-child(even) h3 {
+
   color: var(--green);
+
 }
 
 .team-card p {
