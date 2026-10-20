@@ -673,3 +673,277 @@ button:focus-visible {
     transition: none;
   }
 }
+
+
+/* Lobby: tarjetas de equipos */
+.teams {
+  align-items: start;
+}
+
+.team-card {
+  padding: 15px;
+}
+
+.team-card.team-a {
+  border: 1px solid rgba(217, 54, 69, 0.4);
+  border-top: 3px solid #d93645;
+  background: linear-gradient(155deg, #2b2833, #20232d);
+}
+
+.team-card.team-b {
+  border: 1px solid rgba(85, 217, 149, 0.35);
+  border-top: 3px solid #55d995;
+  background: linear-gradient(155deg, #24312f, #20252e);
+}
+
+.team-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(160, 170, 189, 0.2);
+}
+
+.team-title-group {
+  min-width: 0;
+}
+
+.team-header h3 {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 17px;
+}
+
+.team-a .team-header h3 {
+  color: #ff737d;
+}
+
+.team-b .team-header h3 {
+  color: #55d995;
+}
+
+.team-score {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.team-count {
+  flex-shrink: 0;
+  padding: 4px 7px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.team-player-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(160, 170, 189, 0.13);
+}
+
+.team-player-row:last-child {
+  border-bottom: 0;
+}
+
+.team-player-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.team-player-name {
+  display: block;
+  overflow-wrap: anywhere;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.team-player-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.team-player-role {
+  color: #d9dfea;
+}
+
+.team-player-actions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 8px;
+}
+
+.team-action {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  min-height: 40px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+}
+
+.team-action svg {
+  width: 19px;
+  height: 19px;
+}
+
+.swap-player-button {
+  border-color: #454e60;
+  background: rgba(255, 255, 255, 0.025);
+  color: #c4cedd;
+}
+
+.swap-player-button:hover,
+.swap-player-button:focus-visible {
+  border-color: #75839a;
+  background: #303746;
+  color: #ffffff;
+}
+
+.teams-footer {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+.teams-footer .primary-button {
+  margin-top: 0;
+}
+
+/* Selector visual de intercambio */
+.lobby-modal-overlay {
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  background: rgba(5, 8, 13, 0.78);
+  backdrop-filter: blur(5px);
+}
+
+.lobby-modal {
+  width: min(100%, 420px);
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: 20px;
+  border: 1px solid #414959;
+  border-radius: 17px;
+  background: #191e29;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+
+.lobby-modal h3 {
+  margin: 0;
+  color: var(--text);
+  font-size: 20px;
+}
+
+.modal-description {
+  margin: 7px 0 16px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.swap-options {
+  display: grid;
+  gap: 8px;
+}
+
+.swap-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 58px;
+  padding: 11px 13px;
+  border: 1px solid #394252;
+  border-radius: 11px;
+  background: #252b38;
+  color: var(--text);
+  text-align: left;
+}
+
+.swap-option:hover,
+.swap-option:focus-visible {
+  border-color: #55d995;
+  background: #26352f;
+}
+
+.swap-option-info {
+  display: grid;
+  gap: 3px;
+}
+
+.swap-option-info strong {
+  font-size: 14px;
+}
+
+.swap-option-info small {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.swap-option-arrow {
+  color: #55d995;
+  font-size: 22px;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.modal-cancel {
+  min-height: 42px;
+  border-color: #454e60;
+  background: transparent;
+  color: var(--muted);
+}
+
+@media (max-width: 480px) {
+  .teams {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .team-player-row {
+    gap: 8px;
+  }
+
+  .team-player-name {
+    font-size: 15px;
+  }
+
+  .team-player-actions {
+    gap: 6px;
+  }
+
+  .team-action {
+    width: 42px;
+    height: 42px;
+    min-height: 42px;
+  }
+
+  .lobby-modal {
+    padding: 17px;
+  }
+}
+
